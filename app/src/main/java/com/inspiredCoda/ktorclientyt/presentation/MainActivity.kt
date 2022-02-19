@@ -1,23 +1,27 @@
 package com.inspiredCoda.ktorclientyt.presentation
 
 import android.app.Activity
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.inspiredCoda.ktorclientyt.R
+import com.inspiredCoda.ktorclientyt.data.ApiService
+import com.inspiredCoda.ktorclientyt.data.RepositoryImpl
 import com.inspiredCoda.ktorclientyt.databinding.ActivityMainBinding
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 class MainActivity : AppCompatActivity() {
 
-//    private val mainViewModel: MainViewModel by lazy {
-//        val client = ApiService.build()
-//        val repo = RepositoryImpl(client)
-//        MainViewModelFactory(repo).create(MainViewModel::class.java)
-//    }
+    private val mainViewModel: MainViewModel by lazy {
+        val httpClient = ApiService.build()
+        val repository = RepositoryImpl(httpClient)
+        MainViewModelFactory(repository).create(MainViewModel::class.java)
+    }
 
     private var _binding: ActivityMainBinding? = null
     private val binding: ActivityMainBinding
@@ -47,23 +51,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun observer() {
-        lifecycleScope.launchWhenStarted {
-//            mainViewModel.getUserState.collect { state ->
-//                when (state) {
-//                    is MainViewModel.UIState.Loading -> {
-//                        binding.progressBar.root.show(true)
-//                    }
-//                    is MainViewModel.UIState.Success -> {
-//                        binding.progressBar.root.show(false)
-//                        mAdapter.submitUsers(state.data)
-//                    }
-//                    is MainViewModel.UIState.Failure -> {
-//                        binding.progressBar.root.show(false)
-//                        snackbar(state.message)
-//                    }
-//                }
-//            }
-        }
+        mainViewModel.userState.onEach { state ->
+            when (state) {
+                is MainViewModel.UIState.Loading -> {
+                    binding.progressBar.root.show(true)
+                }
+                is MainViewModel.UIState.Success -> {
+                    binding.progressBar.root.show(false)
+                    mAdapter.submitUsers(state.users)
+                }
+                is MainViewModel.UIState.Failure -> {
+                    binding.progressBar.root.show(false)
+                    snackbar(state.message)
+                }
+            }
+        }.launchIn(lifecycleScope)
     }
 
     private fun View.show(show: Boolean) {
