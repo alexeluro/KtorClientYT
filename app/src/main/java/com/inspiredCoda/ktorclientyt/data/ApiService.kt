@@ -1,5 +1,6 @@
 package com.inspiredCoda.ktorclientyt.data
 
+import android.app.Application
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.*
@@ -16,8 +17,12 @@ interface ApiService {
 
     companion object {
         const val BASE_URL = "https://jsonplaceholder.typicode.com"
-        fun build(): HttpClient {
+        fun build(context: Application): HttpClient {
             return HttpClient(CIO) {
+                install(InternetInterceptor) {
+                    application = context
+                }
+
                 install(JsonFeature) {
                     serializer = KotlinxSerializer(kotlinx.serialization.json.Json {
                         isLenient = true

@@ -18,7 +18,7 @@ import kotlinx.coroutines.flow.onEach
 class MainActivity : AppCompatActivity() {
 
     private val mainViewModel: MainViewModel by lazy {
-        val httpClient = ApiService.build()
+        val httpClient = ApiService.build(this.application)
         val repository = RepositoryImpl(httpClient)
         MainViewModelFactory(repository).create(MainViewModel::class.java)
     }

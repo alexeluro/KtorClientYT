@@ -11,6 +11,8 @@ class RepositoryImpl(
         return try {
             val response = httpClient.get<List<RemoteUser>>(ApiService.Routes.UsersEndPoint.url)
             NetworkEvents.Success(response.map { it.toUser() })
+        } catch (ex: InternetInterceptor.NoInternetException) {
+            NetworkEvents.Failure(ex.message ?: "Än error occurred")
         } catch (ex: Exception) {
             NetworkEvents.Failure(ex.message ?: "Än error occurred")
         }
